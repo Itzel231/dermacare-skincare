@@ -1,24 +1,18 @@
-/* =========================================================
-   1. VERIFICACIÓN DE SEGURIDAD HTTPS
-   ========================================================= */
 function checkHTTPS() {
     const statusEl = document.getElementById('https-status');
     const bannerEl = document.getElementById('security-banner');
     
     if (window.location.protocol === 'https:') {
-        statusEl.textContent = '🔒 Conexión Segura (HTTPS)';
+        statusEl.textContent = '🔒 HTTPS Activo';
     } else if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol === 'file:') {
-        statusEl.textContent = '🛠️ Entorno VS Code Local (HTTPS listo para servidor)';
+        statusEl.textContent = '🛠️ Modo Local';
     } else {
-        statusEl.textContent = '⚠️ Conexión No Segura (HTTP)';
+        statusEl.textContent = '⚠️ No Seguro (HTTP)';
         bannerEl.style.display = 'block';
         window.location.href = window.location.href.replace('http:', 'https:');
     }
 }
 
-/* =========================================================
-   2. BASE DE DATOS LOCAL CON IMÁGENES (LOCALSTORAGE)
-   ========================================================= */
 const FALLBACK_IMAGE = "https://unsplash.com";
 
 const defaultProducts = [
@@ -26,7 +20,9 @@ const defaultProducts = [
         id: 1,
         name: "Limpiador Facial Suave",
         category: "Limpieza",
-        image: "https://unsplash.com", // <-- LÍNEA 24: Cambia por "img/tu-foto.jpg" si deseas
+        price: 280,
+        skinType: "Todo tipo de piel",
+        image: "https://unsplash.com",
         alt: "Botella blanca con dispensador de gel limpiador facial suave junto a una toalla limpia",
         description: "Elimina impurezas, exceso de sebo, sudor y restos de contaminación sin dañar la barrera natural de la piel.",
         usage: "Primer paso de la rutina. Masajear sobre rostro húmedo por 30 segundos y enjuagar."
@@ -35,16 +31,20 @@ const defaultProducts = [
         id: 2,
         name: "Sérum de Ácido Hialurónico",
         category: "Hidratación",
-        image: "https://unsplash.com", // <-- LÍNEA 33: Cambia por "img/tu-foto.jpg" si deseas
+        price: 390,
+        skinType: "Piel Seca / Mixta",
+        image: "https://unsplash.com",
         alt: "Frasco gotero de vidrio con sérum hidratante transparente de ácido hialurónico",
         description: "Retiene hasta 1000 veces su peso en agua, rellenando líneas finas por deshidratación y aportando jugosidad.",
         usage: "Aplicar de 2 a 3 gotas sobre la piel ligeramente húmeda antes de la crema."
     },
     {
         id: 3,
-        name: "Sérum de Vitamina C",
+        name: "Sérum de Vitamina C 15%",
         category: "Tratamiento",
-        image: "https://unsplash.com", // <-- LÍNEA 42: Cambia por "img/tu-foto.jpg" si deseas
+        price: 450,
+        skinType: "Piel Opaca / Manchas",
+        image: "https://unsplash.com",
         alt: "Frasco ámbar con gotero de sérum antioxidante de vitamina C iluminador",
         description: "Potente antioxidante que ilumina el rostro, unifica el tono, atenúa manchas y protege contra radicales libres.",
         usage: "Usar por las mañanas sobre piel limpia y seca, siempre seguido de protector solar."
@@ -53,24 +53,104 @@ const defaultProducts = [
         id: 4,
         name: "Protector Solar FPS 50+",
         category: "Protección",
-        image: "https://unsplash.com", // <-- LÍNEA 51: Cambia por "img/tu-foto.jpg" si deseas
+        price: 420,
+        skinType: "Todo tipo de piel",
+        image: "https://unsplash.com",
         alt: "Tubo de crema protectora solar facial FPS 50 bajo luz natural",
         description: "Previene quemaduras solares, envejecimiento prematuro, manchas y reduce el riesgo de cáncer de piel.",
         usage: "Último paso de la rutina de mañana. Aplicar dos dedos de producto y reaplicar cada 2-3 horas."
     }
 ];
 
-let productsDB = JSON.parse(localStorage.getItem('skincare_db_vscode')) || defaultProducts;
+let productsDB = JSON.parse(localStorage.getItem('skincare_catalog_v3')) || defaultProducts;
 
 function saveDB() {
-    localStorage.setItem('skincare_db_vscode', JSON.stringify(productsDB));
+    localStorage.setItem('skincare_catalog_v3', JSON.stringify(productsDB));
     renderProducts();
     renderAdminList();
 }
 
-/* =========================================================
-   3. RENDERIZADO DE PRODUCTOS Y FILTROS
-   ========================================================= */
+let currentUser = JSON.parse(sessionStorage.getItem('dermacare_active_user')) || null;
+let userLogs = JSON.parse(localStorage.getItem('dermacare_user_logs')) || [];
+
+function updateUserUI() {
+    const area = document.getElementById('user-session-area');
+    if (currentUser) {
+        area.innerHTML = `
+            <span>👋 Hola, <strong>${currentUser.name}</strong> (Piel ${currentUser.skinType})</span>
+            <button type="button" class="btn-user-logout" onclick="logoutUser()">Salir</button>
+        `;
+    } else {
+        area.innerHTML = `
+            <button type="button" class="btn-user-login" onclick="openUserModal()">👤 Iniciar Sesión</button>
+        `;
+    }
+}
+
+function openUserModal() {
+    document.getElementById('user-modal').classList.add('open');
+    document.getElementById('user-name').focus();
+}
+
+function loginUser(event) {
+    event.preventDefault();
+    const name = document.getElementById('user-name').value.trim();
+    const email = document.getElementById('user-email').value.trim();
+    const skinType = document.getElementById('user-skin').value;
+    const timestamp = new Date().toLocaleString('es-MX', {
+        dateStyle: 'medium',
+        timeStyle: 'short'
+    });
+
+    currentUser = { name, email, skinType, loginTime: timestamp };
+    sessionStorage.setItem('dermacare_active_user', JSON.stringify(currentUser));
+
+    userLogs.unshift(currentUser);
+    localStorage.setItem('dermacare_user_logs', JSON.stringify(userLogs));
+
+    updateUserUI();
+    closeModals();
+    event.target.reset();
+}
+
+function logoutUser() {
+    currentUser = null;
+    sessionStorage.removeItem('dermacare_active_user');
+    updateUserUI();
+}
+
+function renderUserLogs() {
+    const list = document.getElementById('admin-users-list');
+    const countEl = document.getElementById('users-count');
+    countEl.textContent = userLogs.length;
+
+    if (userLogs.length === 0) {
+        list.innerHTML = '<p>Aún no hay usuarios registrados que hayan iniciado sesión.</p>';
+        return;
+    }
+
+    list.innerHTML = '';
+    userLogs.forEach(u => {
+        const div = document.createElement('div');
+        div.className = 'user-log-item';
+        div.innerHTML = `
+            <div><strong>👤 ${u.name}</strong> — <span>${u.email}</span></div>
+            <div style="font-size: 0.85rem; opacity: 0.85;">
+                Tipo de piel: <strong>${u.skinType}</strong> | Ingresó: ${u.loginTime}
+            </div>
+        `;
+        list.appendChild(div);
+    });
+}
+
+function clearUserLogs() {
+    if (confirm("¿Deseas borrar el historial de usuarios logueados?")) {
+        userLogs = [];
+        localStorage.setItem('dermacare_user_logs', JSON.stringify(userLogs));
+        renderUserLogs();
+    }
+}
+
 let currentFilter = 'Todos';
 
 function renderProducts() {
@@ -82,7 +162,7 @@ function renderProducts() {
         : productsDB.filter(p => p.category === currentFilter);
 
     if (filtered.length === 0) {
-        container.innerHTML = '<p>No hay productos registrados en esta categoría.</p>';
+        container.innerHTML = '<p>No hay productos disponibles en esta categoría.</p>';
         return;
     }
 
@@ -91,6 +171,8 @@ function renderProducts() {
         card.className = 'product-card';
         const imgSrc = prod.image || FALLBACK_IMAGE;
         const imgAlt = prod.alt || `Imagen ilustrativa de ${prod.name}`;
+        const priceFormatted = prod.price ? `$${prod.price} MXN` : 'Consultar';
+        const skinLabel = prod.skinType || 'Todo tipo de piel';
 
         card.innerHTML = `
             <div class="product-img-wrapper">
@@ -101,18 +183,22 @@ function renderProducts() {
                     loading="lazy"
                     onerror="this.onerror=null; this.src='${FALLBACK_IMAGE}';"
                 >
+                <span class="price-tag">${priceFormatted}</span>
             </div>
             <div class="card-body">
                 <div>
-                    <span class="badge">${prod.category}</span>
+                    <div class="card-meta">
+                        <span class="badge">${prod.category}</span>
+                        <span class="skin-tag">${skinLabel}</span>
+                    </div>
                     <h2>${prod.name}</h2>
                     <p><strong>¿Para qué sirve?:</strong> ${prod.description}</p>
                     <div class="usage-box">
-                        <strong>Cómo usarlo:</strong> ${prod.usage}
+                        <strong>Modo de uso:</strong> ${prod.usage}
                     </div>
                 </div>
-                <button type="button" class="btn-speak" onclick="speakText('${prod.name}. Categoría ${prod.category}. Para qué sirve: ${prod.description}. Modo de uso: ${prod.usage}')" aria-label="Escuchar información de ${prod.name}">
-                    🔊 Escuchar descripción
+                <button type="button" class="btn-speak" onclick="speakText('${prod.name}. Precio ${priceFormatted}. Categoría ${prod.category}. Ideal para ${skinLabel}. Para qué sirve: ${prod.description}. Modo de uso: ${prod.usage}')" aria-label="Escuchar ficha del producto ${prod.name}">
+                    🔊 Escuchar ficha del producto
                 </button>
             </div>
         `;
@@ -127,9 +213,6 @@ function filterProducts(category, btnElement) {
     renderProducts();
 }
 
-/* =========================================================
-   4. ACCESIBILIDAD (VOZ, ALTO CONTRASTE Y TAMAÑO DE FUENTE)
-   ========================================================= */
 let currentFontSize = 16;
 
 function changeFontSize(delta) {
@@ -159,9 +242,6 @@ function stopSpeech() {
     }
 }
 
-/* =========================================================
-   5. SEGURIDAD DE ADMINISTRADOR Y SUBIDA DE IMÁGENES
-   ========================================================= */
 async function sha256(message) {
     const msgBuffer = new TextEncoder().encode(message);
     const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
@@ -176,70 +256,3 @@ function openLoginModal() {
     document.getElementById('admin-pass').focus();
 }
 
-function closeModals() {
-    document.querySelectorAll('.modal').forEach(m => m.classList.remove('open'));
-}
-
-async function verifyAdmin(event) {
-    event.preventDefault();
-    const inputPass = document.getElementById('admin-pass').value;
-    
-    // Contraseña única: Skincare2026!
-    const validHash = await sha256("Skincare2026!");
-    const inputHash = await sha256(inputPass);
-
-    if (inputHash === validHash) {
-        closeModals();
-        renderAdminList();
-        document.getElementById('admin-modal').classList.add('open');
-        document.getElementById('prod-name').focus();
-    } else {
-        document.getElementById('login-error').textContent = 'Contraseña incorrecta. Acceso denegado.';
-    }
-}
-
-// Convierte archivo de imagen subido desde el dispositivo a Base64 optimizado
-function readImageFile(file) {
-    return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (e) => resolve(e.target.result);
-        reader.readAsDataURL(file);
-    });
-}
-
-async function addProduct(event) {
-    event.preventDefault();
-    const fileInput = document.getElementById('prod-file');
-    const urlInput = document.getElementById('prod-img').value.trim();
-    
-    let finalImage = urlInput || FALLBACK_IMAGE;
-
-    // Si el usuario seleccionó un archivo desde su PC o celular, tiene prioridad
-    if (fileInput.files && fileInput.files[0]) {
-        finalImage = await readImageFile(fileInput.files[0]);
-    }
-
-    const newProd = {
-        id: Date.now(),
-        name: document.getElementById('prod-name').value.trim(),
-        category: document.getElementById('prod-cat').value,
-        image: finalImage,
-        alt: document.getElementById('prod-alt').value.trim(),
-        description: document.getElementById('prod-desc').value.trim(),
-        usage: document.getElementById('prod-use').value.trim()
-    };
-
-    productsDB.push(newProd);
-    saveDB();
-    event.target.reset();
-    alert("Producto guardado correctamente en la base de datos.");
-}
-
-function deleteProduct(id) {
-    if (confirm("¿Seguro que deseas eliminar este producto?")) {
-        productsDB = productsDB.filter(p => p.id !== id);
-        saveDB();
-    }
-}
-
-function renderAdminList() {
