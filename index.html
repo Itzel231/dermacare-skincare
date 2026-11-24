@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <title>DermaCare | Guía de Skincare y Productos</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <a href="#main-content" class="skip-link">Saltar directamente a los productos de skincare</a>
+
+    <div id="security-banner" role="alert">
+        ⚠️ Advertencia de Seguridad: No estás navegando bajo una conexión segura HTTPS.
+    </div>
+
+    <div class="top-bar" role="region" aria-label="Herramientas de accesibilidad">
+        <div class="accessibility-controls">
+            <span>Accesibilidad: </span>
+            <button type="button" onclick="changeFontSize(2)" aria-label="Aumentar tamaño de texto">A+</button>
+            <button type="button" onclick="changeFontSize(-2)" aria-label="Disminuir tamaño de texto">A-</button>
+            <button type="button" onclick="toggleContrast()" aria-label="Alternar modo de alto contraste">Alto Contraste</button>
+            <button type="button" onclick="stopSpeech()" aria-label="Detener lectura de voz">⏹ Detener Voz</button>
+        </div>
+        <div id="https-status" aria-live="polite">🔒 Verificando conexión...</div>
+    </div>
+
+    <header>
+        <h1>DermaCare Guía</h1>
+        <p>Conoce qué es cada producto de skincare, para qué sirve y cómo aplicarlo correctamente.</p>
+        <nav aria-label="Filtrar productos por categoría" class="filters">
+            <button class="filter-btn active" onclick="filterProducts('Todos', this)">Todos</button>
+            <button class="filter-btn" onclick="filterProducts('Limpieza', this)">Limpieza</button>
+            <button class="filter-btn" onclick="filterProducts('Tratamiento', this)">Tratamiento / Sérums</button>
+            <button class="filter-btn" onclick="filterProducts('Hidratación', this)">Hidratación</button>
+            <button class="filter-btn" onclick="filterProducts('Protección', this)">Protección Solar</button>
+        </nav>
+
+        <section id="product-list" class="product-grid" aria-live="polite" aria-label="Lista de productos de skincare">
+    <button id="hidden-admin-trigger" onclick="openLoginModal()" aria-label="Acceso oculto de administrador" title="Panel Admin">
+        ⚙️ Admin
+    </button>
+
+    <div id="login-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="login-title">
+        <div class="modal-content">
+            <h2 id="login-title">Acceso de Administrador</h2>
+            <p class="modal-subtitle">Introduce la contraseña única para gestionar la base de datos.</p>
+            <form onsubmit="verifyAdmin(event)">
+                <div class="form-group">
+                    <label for="admin-pass">Contraseña única:</label>
+                    <input type="password" id="admin-pass" required autocomplete="current-password">
+                </div>
+                <p id="login-error" class="error-text" role="alert"></p>
+                <button type="submit" class="btn-primary">Ingresar</button>
+                <button type="button" class="btn-speak btn-inline" onclick="closeModals()">Cancelar</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="admin-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="admin-title">
+        <div class="modal-content">
+            <h2 id="admin-title">Gestión de Base de Datos Skincare</h2>
+            <form onsubmit="addProduct(event)" class="admin-form">
+                <div class="form-group">
+                    <label for="prod-name">Nombre del Producto:</label>
+                    <input type="text" id="prod-name" placeholder="Ej. Niacinamida 10%" required>
+                </div>
+                <div class="form-group">
+                    <label for="prod-cat">Categoría:</label>
+                    <select id="prod-cat" required>
+                        <option value="Limpieza">Limpieza</option>
+                        <option value="Tratamiento">Tratamiento</option>
+                        <option value="Hidratación">Hidratación</option>
+                        <option value="Protección">Protección</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="prod-file">Subir Foto desde tu dispositivo (Opcional):</label>
+                    <input type="file" id="prod-file" accept="image/*">
+                </div>
+                <div class="form-group">
+                    <label for="prod-img">O pegar ruta/URL de imagen (ej. img/foto.jpg):</label>
+                    <input type="text" id="prod-img" placeholder="img/mi-producto.jpg o https://...">
+                </div>
+                <div class="form-group">
+                    <label for="prod-alt">Descripción de la imagen (Accesibilidad visual):</label>
+                    <input type="text" id="prod-alt" placeholder="Ej. Frasco gotero transparente sobre fondo blanco" required>
+                </div>
+                <div class="form-group">
+                    <label for="prod-desc">¿Para qué sirve? (Beneficios):</label>
+                    <textarea id="prod-desc" rows="2" placeholder="Controla el exceso de grasa y minimiza poros..." required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="prod-use">Modo de uso:</label>
+                    <input type="text" id="prod-use" placeholder="Aplicar 3 gotas en rostro limpio día y noche." required>
+                </div>
+                <button type="submit" class="btn-primary">Guardar en Base de Datos</button>
+                <button type="button" class="btn-speak btn-inline" onclick="closeModals()">Cerrar Panel</button>
+            </form>
+
+            <h3 class="admin-list-title">Productos Actuales en Base de Datos:</h3>
+            <div id="admin-product-list"></div>
+        </div>
+    </div>
+
+        <p>DermaCare © 2026 - Sitio diseñado bajo estándares de accesibilidad web (WCAG) y protocolo seguro.</p>
+    <script src="app.js"></script>
+</body>
+</html>
