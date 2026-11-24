@@ -3,168 +3,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
-    <title>DermaCare | Catálogo Oficial de Skincare</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Aura Beauty | Skincare & Belleza</title>
+    <!-- Tailwind CSS para diseño responsivo y moderno -->
+    <script src="https://tailwindcss.com"></script>
+    <!-- Iconos de Lucide -->
+    <script src="https://unpkg.com"></script>
+    <!-- Fuentes de Google -->
+    <link href="https://googleapis.com" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #FFF9FA;
+            color: #2D2426;
+        }
+        h1, h2, h3, .brand-font {
+            font-family: 'Playfair Display', serif;
+        }
+        .fade-in {
+            animation: fadeIn 0.4s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </head>
-<body>
+<body class="min-h-screen flex flex-col">
 
-    <a href="#main-content" class="skip-link">Saltar directamente al catálogo de productos</a>
-
-    <div id="security-banner" role="alert">
-        ⚠️ Advertencia de Seguridad: No estás navegando bajo una conexión segura HTTPS.
-    </div>
-
-    <!-- BARRA SUPERIOR: ACCESIBILIDAD + LOGIN DE USUARIOS -->
-    <div class="top-bar" role="region" aria-label="Herramientas de accesibilidad y cuenta de usuario">
-        <div class="accessibility-controls">
-            <span>Accesibilidad: </span>
-            <button type="button" onclick="changeFontSize(2)" aria-label="Aumentar tamaño de texto">A+</button>
-            <button type="button" onclick="changeFontSize(-2)" aria-label="Disminuir tamaño de texto">A-</button>
-            <button type="button" onclick="toggleContrast()" aria-label="Alternar modo de alto contraste">Alto Contraste</button>
-            <button type="button" onclick="stopSpeech()" aria-label="Detener lectura de voz">⏹ Detener Voz</button>
-        </div>
-
-        <div class="user-bar">
-            <span id="https-status" aria-live="polite">🔒 Verificando...</span>
-            <div id="user-session-area">
-                <button type="button" class="btn-user-login" onclick="openUserModal()">👤 Iniciar Sesión</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- ENCABEZADO CON LOGO CLICKEABLE AL SITIO OFICIAL -->
-    <header>
-        <div class="header-container">
-            <!-- Cambia el href por el enlace exacto que te dio Cloudflare -->
-            <a href="https://workers.dev" class="brand-logo" aria-label="Ir al sitio oficial de DermaCare Skincare">
-                <svg width="42" height="42" viewBox="0 0 48 48" fill="none" aria-hidden="true">
-                    <rect width="48" height="48" rx="12" fill="currentColor" fill-opacity="0.15"/>
-                    <path d="M24 10C24 10 14 20.5 14 28C14 33.5228 18.4772 38 24 38C29.5228 38 34 33.5228 34 28C34 20.5 24 10 24 10Z" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M20 29C20 31.2091 21.7909 33 24 33" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>
-                </svg>
-                <div class="brand-text">
-                    <span class="brand-title">DermaCare</span>
-                    <span class="brand-subtitle">Catálogo Dermatológico</span>
+    <!-- ==================== BARRA DE NAVEGACIÓN ==================== -->
+    <header class="bg-white/90 backdrop-blur-md sticky top-0 z-40 border-b border-rose-100 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            
+            <!-- LOGO (Al hacer clic regresa al inicio) -->
+            <a href="#" onclick="irAlInicio()" class="flex items-center gap-2 group cursor-pointer">
+                <div class="w-10 h-10 bg-rose-500 rounded-full flex items-center justify-center text-white shadow-md group-hover:scale-105 transition">
+                    <i data-lucide="sparkles" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <span class="brand-font text-2xl font-bold tracking-tight text-rose-950">AURA</span>
+                    <span class="block text-[10px] tracking-[0.2em] text-rose-500 uppercase font-semibold -mt-1">Skincare</span>
                 </div>
             </a>
 
-            <p class="header-desc">Explora nuestro catálogo: descubre para qué sirve cada producto, su precio y cómo aplicarlo.</p>
+            <!-- MENÚ DE NAVEGACIÓN -->
+            <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
+                <button onclick="irAlInicio()" class="hover:text-rose-600 transition">Inicio</button>
+                <button onclick="filtrarPorCategoria('Todos')" class="hover:text-rose-600 transition">Catálogo Completo</button>
+                <button onclick="filtrarPorCategoria('Sueros')" class="hover:text-rose-600 transition">Sueros</button>
+                <button onclick="filtrarPorCategoria('Hidratantes')" class="hover:text-rose-600 transition">Hidratantes</button>
+                <button onclick="filtrarPorCategoria('Limpieza')" class="hover:text-rose-600 transition">Limpieza</button>
+            </nav>
+
+            <!-- ACCIONES DERECHA (Usuario, Admin, Carrito) -->
+            <div class="flex items-center gap-3 sm:gap-5">
+                
+                <!-- Botón Panel Admin (Solo visible si inicia sesión el admin) -->
+                <button id="btn-admin-panel" onclick="mostrarVista('admin')" class="hidden bg-rose-950 text-white text-xs sm:text-sm px-3 py-2 rounded-full font-medium flex items-center gap-1.5 hover:bg-rose-800 transition shadow">
+                    <i data-lucide="database" class="w-4 h-4"></i>
+                    <span>Base de Datos</span>
+                </button>
+
+                <!-- Estado de Usuario / Botón Login -->
+                <div id="user-section">
+                    <button onclick="abrirModalLogin()" class="text-sm font-medium text-gray-700 hover:text-rose-600 flex items-center gap-1.5 bg-rose-50 px-3.5 py-2 rounded-full transition">
+                        <i data-lucide="user" class="w-4 h-4 text-rose-500"></i>
+                        <span>Ingresar</span>
+                    </button>
+                </div>
+
+                <!-- Carrito de Compras -->
+                <button onclick="abrirCarrito()" class="relative p-2 text-gray-700 hover:text-rose-600 transition">
+                    <i data-lucide="shopping-bag" class="w-6 h-6"></i>
+                    <span id="cart-count" class="absolute top-0 right-0 bg-rose-500 text-white text-[11px] font-bold w-5 h-5 rounded-full flex items-center justify-center">0</span>
+                </button>
+            </div>
         </div>
+    </header>
 
-        <nav aria-label="Filtrar catálogo por categoría" class="filters">
-            <button class="filter-btn active" onclick="filterProducts('Todos', this)">Todos</button>
-            <button class="filter-btn" onclick="filterProducts('Limpieza', this)">Limpieza</button>
-            <button class="filter-btn" onclick="filterProducts('Tratamiento', this)">Tratamiento / Sérums</button>
-            <button class="filter-btn" onclick="filterProducts('Hidratación', this)">Hidratación</button>
-            <button class="filter-btn" onclick="filterProducts('Protección', this)">Protección Solar</button>
-        </nav>
+    <!-- ==================== CONTENIDO PRINCIPAL ==================== -->
+    <main class="flex-grow">
 
-        <section id="product-list" class="product-grid" aria-live="polite" aria-label="Catálogo de productos de skincare">
-    <!-- BOTÓN ESCONDIDO DE ADMINISTRADOR -->
-    <button id="hidden-admin-trigger" onclick="openLoginModal()" aria-label="Acceso oculto de administrador" title="Panel Admin">
-        ⚙️ Admin
-    </button>
-
-    <!-- MODAL 1: INICIO DE SESIÓN / REGISTRO DE USUARIOS VISITANTES -->
-    <div id="user-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="user-modal-title">
-        <div class="modal-content">
-            <h2 id="user-modal-title">Acceso de Clientes / Usuarios</h2>
-            <p class="modal-subtitle">Inicia sesión o regístrate para personalizar tu experiencia en el catálogo.</p>
-            <form onsubmit="loginUser(event)">
-                <div class="form-group">
-                    <label for="user-name">Nombre completo:</label>
-                    <input type="text" id="user-name" placeholder="Ej. María López" required>
+        <!-- VISTA 1: INICIO (HERO + CATEGORÍAS INTERACTIVAS) -->
+        <section id="vista-inicio" class="fade-in">
+            <!-- Banner Principal -->
+            <div class="relative bg-gradient-to-r from-rose-100 via-pink-50 to-amber-50 overflow-hidden">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 grid md:grid-cols-2 gap-10 items-center">
+                    <div class="space-y-6">
+                        <span class="inline-block bg-white text-rose-600 text-xs font-bold px-3 py-1 rounded-full tracking-wider uppercase shadow-sm">
+                            Nueva Colección Botánica
+                        </span>
+                        <h1 class="text-4xl sm:text-5xl lg:text-6xl font-bold text-rose-950 leading-tight">
+                            Ilumina tu piel de forma natural.
+                        </h1>
+                        <p class="text-gray-600 text-base sm:text-lg max-w-md">
+                            Fórmulas dermatológicas diseñadas para hidratar, reparar y resaltar tu belleza real todos los días.
+                        </p>
+                        <div class="pt-2 flex flex-wrap gap-4">
+                            <button onclick="filtrarPorCategoria('Todos')" class="bg-rose-600 text-white px-7 py-3.5 rounded-full font-medium hover:bg-rose-700 transition shadow-lg shadow-rose-200 flex items-center gap-2">
+                                <span>Explorar Productos</span>
+                                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="relative">
+                        <img src="https://unsplash.com" alt="Skincare Productos" class="rounded-3xl shadow-2xl object-cover w-full h-[350px] sm:h-[450px]">
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="user-email">Correo electrónico:</label>
-                    <input type="email" id="user-email" placeholder="correo@ejemplo.com" required>
-                </div>
-                <div class="form-group">
-                    <label for="user-skin">Tu tipo de piel:</label>
-                    <select id="user-skin" required>
-                        <option value="Mixta">Mixta</option>
-                        <option value="Grasa">Grasa</option>
-                        <option value="Seca">Seca</option>
-                        <option value="Sensible">Sensible</option>
-                        <option value="Normal">Normal</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn-primary">Entrar al Catálogo</button>
-                <button type="button" class="btn-speak btn-inline" onclick="closeModals()">Cancelar</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL 2: LOGIN DE ADMINISTRADOR (CONTRASEÑA ÚNICA) -->
-    <div id="login-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="login-title">
-        <div class="modal-content">
-            <h2 id="login-title">Acceso de Administrador</h2>
-            <p class="modal-subtitle">Introduce la contraseña única para gestionar el catálogo y ver usuarios.</p>
-            <form onsubmit="verifyAdmin(event)">
-                <div class="form-group">
-                    <label for="admin-pass">Contraseña única:</label>
-                    <input type="password" id="admin-pass" required autocomplete="current-password">
-                </div>
-                <p id="login-error" class="error-text" role="alert"></p>
-                <button type="submit" class="btn-primary">Ingresar</button>
-                <button type="button" class="btn-speak btn-inline" onclick="closeModals()">Cancelar</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL 3: PANEL ADMINISTRADOR (PRODUCTOS + USUARIOS LOGUEADOS) -->
-    <div id="admin-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="admin-title">
-        <div class="modal-content modal-wide">
-            <div class="admin-header">
-                <h2 id="admin-title">Panel de Administración</h2>
-                <button type="button" class="btn-speak btn-inline" onclick="closeModals()">✕ Cerrar</button>
             </div>
 
-            <!-- Pestañas internas del Administrador -->
-            <div class="admin-tabs">
-                <button type="button" class="tab-btn active" onclick="switchAdminTab('tab-products', this)">📦 Gestionar Catálogo</button>
-                <button type="button" class="tab-btn" onclick="switchAdminTab('tab-users', this)">👥 Usuarios Logueados (<span id="users-count">0</span>)</button>
-            </div>
+            <!-- SECCIÓN DE IMÁGENES INTERACTIVAS (Al hacer clic lleva a más productos) -->
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+                <div class="text-center max-w-2xl mx-auto mb-12">
+                    <h2 class="text-3xl font-bold text-rose-950 mb-3">Explora por Rutina</h2>
+                    <p class="text-gray-500">Haz clic en cualquier imagen para descubrir todos los productos especializados de esa categoría.</p>
+                </div>
 
-            <!-- SECCIÓN A: GESTIONAR PRODUCTOS -->
-            <div id="tab-products" class="admin-tab-content active">
-                <form onsubmit="addProduct(event)" class="admin-form">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="prod-name">Nombre del Producto:</label>
-                            <input type="text" id="prod-name" placeholder="Ej. Niacinamida 10%" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="prod-price">Precio ($ MXN):</label>
-                            <input type="number" id="prod-price" placeholder="Ej. 350" min="1" required>
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="prod-cat">Categoría:</label>
-                            <select id="prod-cat" required>
-                                <option value="Limpieza">Limpieza</option>
-                                <option value="Tratamiento">Tratamiento</option>
-                                <option value="Hidratación">Hidratación</option>
-                                <option value="Protección">Protección</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="prod-skin">Ideal para piel:</label>
-                            <input type="text" id="prod-skin" placeholder="Ej. Todo tipo de piel / Grasa" required>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Tarjeta Interactiva 1: Sueros -->
+                    <div onclick="filtrarPorCategoria('Sueros')" class="group relative rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition h-80">
+                        <img src="https://unsplash.com" alt="Sueros Faciales" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex flex-col justify-end p-6 text-white">
+                            <span class="text-xs uppercase tracking-widest text-rose-300 font-semibold">Tratamiento Activo</span>
+                            <h3 class="text-2xl font-bold mt-1">Sueros & Vitamina C</h3>
+                            <p class="text-sm text-gray-200 mt-1 flex items-center gap-1 group-hover:translate-x-2 transition">
+                                Ver productos <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                            </p>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label for="prod-file">Subir Foto desde tu dispositivo (Opcional):</label>
-                        <input type="file" id="prod-file" accept="image/*">
+
+                    <!-- Tarjeta Interactiva 2: Hidratantes -->
+                    <div onclick="filtrarPorCategoria('Hidratantes')" class="group relative rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition h-80">
+                        <img src="https://unsplash.com" alt="Cremas Hidratantes" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex flex-col justify-end p-6 text-white">
+                            <span class="text-xs uppercase tracking-widest text-rose-300 font-semibold">Nutrición Profunda</span>
+                            <h3 class="text-2xl font-bold mt-1">Cremas Hidratantes</h3>
+                            <p class="text-sm text-gray-200 mt-1 flex items-center gap-1 group-hover:translate-x-2 transition">
+                                Ver productos <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                            </p>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label for="prod-img">O pegar ruta/URL de imagen:</label>
-                        <input type="text" id="prod-img" placeholder="img/mi-producto.jpg o https://...">
-                    </div>
-                    <div class="form-group">
-                        <label for="prod-alt">Descripción de la imagen (Accesibilidad visual):</label>
-                        <input type="text" id="prod-alt" placeholder="Ej. Frasco gotero transparente sobre fondo blanco" required>
-                    </div>
-                    <div class="form-group">
+
+                    <!-- Tarjeta Interactiva 3: Limpieza -->
+                    <div onclick="filtrarPorCategoria('Limpieza')" class="group relative rounded-2xl overflow-hidden cursor-pointer shadow-md hover:shadow-xl transition h-80 sm:col-span-2 lg:col-span-1">
+                        <img src="https://unsplash.com" alt="Limpieza Facial" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
